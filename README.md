@@ -2,10 +2,6 @@
 
 A peer-to-peer LAN chat application with voice calling capabilities, built with React, Capacitor, and native Android plugins.
 
-## Project info
-
-**URL**: https://lovable.dev/projects/34eded86-dadd-44da-9933-defafd6cc525
-
 ## Features
 
 - 📱 Cross-platform (Web + Android)
@@ -76,12 +72,12 @@ npx cap open android
 
 ### Live Reload (Development)
 
-To enable hot-reload from the Lovable preview:
+To enable hot-reload from your local development server:
 
 1. Edit `capacitor.config.ts`:
 ```ts
 server: {
-  url: 'https://34eded86-dadd-44da-9933-defafd6cc525.lovableproject.com?forceHideBadge=true',
+  url: 'http://YOUR_LOCAL_IP:8080',
   cleartext: true,
   androidScheme: 'https'
 }
@@ -93,11 +89,7 @@ npx cap sync android
 npx cap run android
 ```
 
-## How can I edit this code?
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/34eded86-dadd-44da-9933-defafd6cc525) and start prompting.
+## How to Edit This Code
 
 **Use your preferred IDE**
 
@@ -118,12 +110,4 @@ npm run dev
 
 ## Deployment
 
-**Web**: Open [Lovable](https://lovable.dev/projects/34eded86-dadd-44da-9933-defafd6cc525) → Share → Publish
-
 **Android**: Generate signed APK in Android Studio → Build → Generate Signed Bundle/APK
-
-## Custom Domain
-
-To connect a domain: Project → Settings → Domains → Connect Domain
-
-Read more: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)

@@ -1,12 +1,12 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.lanchat',
+  appId: 'app.lanchat.offline',
   appName: 'LAN Chat',
   webDir: 'dist',
   server: {
     // For development with live reload: uncomment and set your local dev URL
-    // url: 'https://34eded86-dadd-44da-9933-defafd6cc525.lovableproject.com?forceHideBadge=true',
+    // url: 'http://YOUR_LOCAL_IP:8080',
     // cleartext: true,
     androidScheme: 'https'
   },

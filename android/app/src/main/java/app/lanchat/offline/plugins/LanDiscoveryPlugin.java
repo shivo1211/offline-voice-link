@@ -1,4 +1,4 @@
-package app.lovable.lanchat.plugins;
+package app.lanchat.offline.plugins;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

@@ -41,14 +41,14 @@ This will:
 1. **Copy plugin files:**
    ```
    native-plugins/android/LanDiscoveryPlugin.java
-   → android/app/src/main/java/app/lovable/lanchat/plugins/LanDiscoveryPlugin.java
+   → android/app/src/main/java/app/lanchat/offline/plugins/LanDiscoveryPlugin.java
    
    native-plugins/android/WebSocketServerPlugin.java
-   → android/app/src/main/java/app/lovable/lanchat/plugins/WebSocketServerPlugin.java
+   → android/app/src/main/java/app/lanchat/offline/plugins/WebSocketServerPlugin.java
    ```
 
 2. **Update MainActivity.java:**
-   Replace `android/app/src/main/java/app/lovable/lanchat/MainActivity.java` with the contents of `native-plugins/android/MainActivity.java`
+   Replace `android/app/src/main/java/app/lanchat/offline/MainActivity.java` with the contents of `native-plugins/android/MainActivity.java`
 
 3. **Add dependencies to `android/app/build.gradle`:**
    ```groovy

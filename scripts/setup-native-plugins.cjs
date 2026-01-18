@@ -10,8 +10,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const ANDROID_PLUGINS_DIR = 'android/app/src/main/java/app/lovable/lanchat/plugins';
-const ANDROID_MAIN_DIR = 'android/app/src/main/java/app/lovable/lanchat';
+const ANDROID_PLUGINS_DIR = 'android/app/src/main/java/app/lanchat/offline/plugins';
+const ANDROID_MAIN_DIR = 'android/app/src/main/java/app/lanchat/offline';
 const NATIVE_PLUGINS_DIR = 'native-plugins/android';
 
 const files = [
@@ -49,14 +49,14 @@ function ensureDir(dirPath) {
 
 function copyFile(source, dest) {
   const sourcePath = path.join(NATIVE_PLUGINS_DIR, source);
-  
+
   if (!fs.existsSync(sourcePath)) {
     console.error(`✗ Source file not found: ${sourcePath}`);
     return false;
   }
-  
+
   ensureDir(path.dirname(dest));
-  
+
   const content = fs.readFileSync(sourcePath, 'utf8');
   fs.writeFileSync(dest, content);
   console.log(`✓ Copied: ${source} → ${dest}`);
@@ -65,20 +65,20 @@ function copyFile(source, dest) {
 
 function updateBuildGradle() {
   const gradlePath = 'android/app/build.gradle';
-  
+
   if (!fs.existsSync(gradlePath)) {
     console.error(`✗ build.gradle not found at: ${gradlePath}`);
     return false;
   }
-  
+
   let content = fs.readFileSync(gradlePath, 'utf8');
-  
+
   // Check if dependencies already exist
   if (content.includes('Java-WebSocket')) {
     console.log('✓ build.gradle already has WebSocket dependency');
     return true;
   }
-  
+
   // Find the dependencies block and add our dependencies
   const dependenciesMatch = content.match(/dependencies\s*\{/);
   if (dependenciesMatch) {
@@ -88,7 +88,7 @@ function updateBuildGradle() {
     console.log('✓ Added dependencies to build.gradle');
     return true;
   }
-  
+
   console.error('✗ Could not find dependencies block in build.gradle');
   return false;
 }
@@ -103,20 +103,20 @@ function checkAndroidProject() {
 
 function main() {
   console.log('🔧 Setting up native Android plugins for LAN Chat\n');
-  
+
   // Check if android project exists
   if (!checkAndroidProject()) {
     process.exit(1);
   }
-  
+
   // Check if native-plugins directory exists
   if (!fs.existsSync(NATIVE_PLUGINS_DIR)) {
     console.error(`✗ Native plugins directory not found: ${NATIVE_PLUGINS_DIR}`);
     process.exit(1);
   }
-  
+
   let success = true;
-  
+
   // Copy plugin files
   console.log('📂 Copying plugin files...');
   for (const file of files) {
@@ -124,13 +124,13 @@ function main() {
       success = false;
     }
   }
-  
+
   // Update build.gradle
   console.log('\n📝 Updating build.gradle...');
   if (!updateBuildGradle()) {
     success = false;
   }
-  
+
   // Summary
   console.log('\n' + '='.repeat(50));
   if (success) {

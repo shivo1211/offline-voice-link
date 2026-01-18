@@ -1,9 +1,9 @@
-package app.lovable.lanchat;
+package app.lanchat.offline;
 
 import android.os.Bundle;
 import com.getcapacitor.BridgeActivity;
-import app.lovable.lanchat.plugins.LanDiscoveryPlugin;
-import app.lovable.lanchat.plugins.WebSocketServerPlugin;
+import app.lanchat.offline.plugins.LanDiscoveryPlugin;
+import app.lanchat.offline.plugins.WebSocketServerPlugin;
 
 public class MainActivity extends BridgeActivity {
     @Override
