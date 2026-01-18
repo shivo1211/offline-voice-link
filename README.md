@@ -96,8 +96,8 @@ npx cap run android
 Clone this repo and push changes:
 
 ```sh
-git clone <YOUR_GIT_URL>
-cd <YOUR_PROJECT_NAME>
+git clone https://github.com/shivo1211/offline-voice-link.git
+cd offline-voice-link
 npm install
 npm run dev
 ```
