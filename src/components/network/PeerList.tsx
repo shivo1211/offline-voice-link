@@ -1,0 +1,257 @@
+import { Peer } from '@/types/p2p';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { formatDistanceToNow } from 'date-fns';
+import { Search, Users, Wifi, WifiOff, RefreshCw, Plus, Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
+
+interface PeerListProps {
+  peers: Peer[];
+  selectedPeer: Peer | null;
+  onSelectPeer: (peer: Peer) => void;
+  isHost: boolean;
+  hostAddress: string;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
+  onManualConnect?: (ip: string) => Promise<boolean>;
+  unreadCounts?: { [peerId: string]: number };
+}
+
+export function PeerList({ peers, selectedPeer, onSelectPeer, isHost, hostAddress, onRefresh, isRefreshing, onManualConnect, unreadCounts = {} }: PeerListProps) {
+  const [search, setSearch] = useState('');
+  const [manualIp, setManualIp] = useState('');
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [showManualInput, setShowManualInput] = useState(false);
+
+  const filteredPeers = peers.filter((p) =>
+    p.username.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const onlinePeers = filteredPeers.filter(p => p.isOnline);
+  const offlinePeers = filteredPeers.filter(p => !p.isOnline);
+
+  const handleManualConnect = async () => {
+    if (!manualIp.trim() || !onManualConnect) return;
+    
+    // Basic IP validation
+    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+    if (!ipRegex.test(manualIp.trim())) {
+      return;
+    }
+    
+    setIsConnecting(true);
+    try {
+      const success = await onManualConnect(manualIp.trim());
+      if (success) {
+        setManualIp('');
+        setShowManualInput(false);
+      }
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-card border-r border-border overflow-hidden">
+      {/* Header */}
+      <div className="p-4 border-b border-border">
+        <div className="flex items-center gap-2 mb-3">
+          <Users className="w-5 h-5 text-primary flex-shrink-0" />
+          <h2 className="text-lg font-display font-semibold text-foreground">Devices</h2>
+          
+          <span className="ml-auto px-2 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded-full flex-shrink-0">
+            {onlinePeers.length} online
+          </span>
+          
+          {/* Refresh Button - Always visible */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onRefresh}
+            disabled={isRefreshing || !onRefresh}
+            className="h-8 w-8 flex-shrink-0"
+            title="Refresh devices"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
+        </div>
+
+        {/* Connection Status */}
+        <div className="flex items-center gap-2 p-2 rounded-lg bg-secondary/50 mb-3">
+          {isHost ? (
+            <Wifi className="w-4 h-4 text-primary" />
+          ) : (
+            <Wifi className="w-4 h-4 text-foreground" />
+          )}
+          <span className="text-xs text-muted-foreground">
+            {isHost ? 'Hosting' : 'Connected'}: {hostAddress}
+          </span>
+        </div>
+
+        {/* Manual IP Connect */}
+        {onManualConnect && (
+          <div className="mb-3">
+            {showManualInput ? (
+              <div className="flex gap-2">
+                <Input
+                  placeholder="192.168.1.x"
+                  value={manualIp}
+                  onChange={(e) => setManualIp(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleManualConnect()}
+                  className="h-9 rounded-lg bg-secondary/50 border-border text-sm"
+                  disabled={isConnecting}
+                />
+                <Button
+                  size="sm"
+                  onClick={handleManualConnect}
+                  disabled={isConnecting || !manualIp.trim()}
+                  className="h-9 px-3"
+                >
+                  {isConnecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => { setShowManualInput(false); setManualIp(''); }}
+                  className="h-9 px-2"
+                >
+                  ✕
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowManualInput(true)}
+                className="w-full h-9 text-xs"
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                Add device by IP
+              </Button>
+            )}
+          </div>
+        )}
+        
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search devices..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-10 rounded-xl bg-secondary/50 border-border"
+          />
+        </div>
+      </div>
+
+      {/* Peer List */}
+      <ScrollArea className="flex-1">
+        <div className="p-2">
+          {filteredPeers.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <WifiOff className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p className="text-sm">No devices found</p>
+              <p className="text-xs mt-1">Waiting for others to join...</p>
+            </div>
+          ) : (
+            <>
+              {/* Online Peers */}
+              {onlinePeers.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs font-medium text-muted-foreground px-3 mb-2">
+                    ONLINE ({onlinePeers.length})
+                  </p>
+                  {onlinePeers.map((peer) => (
+                    <PeerItem
+                      key={peer.id}
+                      peer={peer}
+                      isSelected={selectedPeer?.id === peer.id}
+                      onSelect={() => onSelectPeer(peer)}
+                      unreadCount={unreadCounts[peer.id] || 0}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Offline Peers */}
+              {offlinePeers.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground px-3 mb-2">
+                    OFFLINE ({offlinePeers.length})
+                  </p>
+                  {offlinePeers.map((peer) => (
+                    <PeerItem
+                      key={peer.id}
+                      peer={peer}
+                      isSelected={selectedPeer?.id === peer.id}
+                      onSelect={() => onSelectPeer(peer)}
+                      unreadCount={unreadCounts[peer.id] || 0}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+}
+
+function PeerItem({ peer, isSelected, onSelect, unreadCount = 0 }: { peer: Peer; isSelected: boolean; onSelect: () => void; unreadCount?: number }) {
+  return (
+    <button
+      onClick={onSelect}
+      className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-secondary/80 ${
+        isSelected ? 'bg-primary/10 border border-primary/20' : ''
+      }`}
+    >
+      <div className="relative">
+        <Avatar className="w-12 h-12 border-2 border-background">
+          <AvatarFallback className="bg-secondary text-secondary-foreground font-medium">
+            {peer.username.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        {peer.isOnline && (
+          <span className="absolute bottom-0 right-0 online-indicator" />
+        )}
+        {/* Unread Message Badge */}
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-background shadow-lg animate-pulse">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        )}
+      </div>
+
+      <div className="flex-1 text-left min-w-0">
+        <p className={`font-medium ${unreadCount > 0 ? 'text-foreground font-semibold' : 'text-foreground'} truncate`}>
+          {peer.username}
+        </p>
+        <p className="text-xs text-muted-foreground truncate">
+          {peer.deviceName && `${peer.deviceName} • `}{peer.ip}
+        </p>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">
+            {peer.isOnline
+              ? 'Online'
+              : formatDistanceToNow(peer.lastSeen, { addSuffix: true })}
+          </span>
+        </div>
+      </div>
+
+      {/* Unread indicator on the right */}
+      {unreadCount > 0 && (
+        <div className="ml-auto flex-shrink-0">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-red-50 dark:bg-red-900/20">
+            <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+            <span className="text-xs font-semibold text-red-600 dark:text-red-400">
+              {unreadCount} new
+            </span>
+          </span>
+        </div>
+      )}
+    </button>
+  );
+}
